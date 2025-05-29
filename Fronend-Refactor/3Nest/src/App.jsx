@@ -1,21 +1,31 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import Home from './pages/Dashboard/Home'
 import Login from './pages/Auth/Login'
-import Signup from './pages/Auth/Loout'
-import Products from './pages/Products'
-import Categories from './pages/Categories'
-import Orders from './pages/Orders'
-import Reports from './pages/Reports'
-import Settings from './pages/Settings'
-import Logout from './pages/Logout'
-import Users from './pages/Users'
-import AddOrder from './pages/AddOder'
+import Products from './pages/admin/Product/Products'
+import Categories from './pages/admin/Category/Categories'
+import Orders from './pages/admin/Order/Orders'
+import Reports from './pages/admin/Reports'
+import Settings from './pages/admin/User/Settings'
+import Logout from './pages/admin/Logout'
+import Users from './pages/admin/User/Users'
+import AddOrder from './pages/admin/Order/AddOder'
+import Home from './pages/admin/Dashboard/Home'
+
+const Root = () => {
+  const isAuthenticated = !!localStorage.getItem('access_token')
+
+  return isAuthenticated ? (
+    <Navigate to="/dashboard" />
+  ) : (
+    <Navigate to="/login" />
+  )
+}
 
 
 const App = () => {
   return (
     <div>
       <Routes>
+        <Route path="/" element={<Root/>} />
         <Route path='/dashboard' element={<Home/>} />
         <Route path="/login" element={<Login/>} />
         <Route path="/products" element={<Products/>} />

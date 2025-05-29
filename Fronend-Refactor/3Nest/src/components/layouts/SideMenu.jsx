@@ -25,22 +25,6 @@ const SideMenu = ({activeMenu}) => {
 
   return (
   <div className="w-full h-full bg-white shadow-md rounded-lg p-6">
-    {/* <div className="flex flex-col items-center mb-6">
-      {user?.profileImageUrl ? (
-        <img
-          src={user.profileImageUrl}
-          alt="Avatar"
-          className="w-20 h-20 rounded-full object-cover mb-3 border-2 border-primary"
-        />
-      ) : (
-        <div className="w-20 h-20 rounded-full bg-gray-300 flex items-center justify-center text-white mb-3 text-xl">
-          ?
-        </div>
-      )}
-      <h5 className="text-lg font-semibold text-gray-800">
-        {user?.fullName || "Người dùng"}
-      </h5>
-    </div> */}
 
     <div className="space-y-2">
       {SIDE_MENU_DATA.map((item, index) => (

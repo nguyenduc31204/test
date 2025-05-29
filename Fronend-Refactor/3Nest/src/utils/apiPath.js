@@ -1,4 +1,4 @@
-export const BASE_URL = "https://8ff5-2001-ee0-4161-95d7-2997-3961-593-3e4c.ngrok-free.app"
+export const BASE_URL = "http://127.0.0.1:8000"
 
 export const API_PATHS = {
     AUTH: {

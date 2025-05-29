@@ -46,16 +46,5 @@ export const SIDE_MENU_DATA = [
     icon: BarChart2,
     path: "/reports",
   },
-  {
-    id: "07",
-    label: "Settings",
-    icon: Settings,
-    path: "/settings",
-  },
-  {
-    id: "08",
-    label: "Logout",
-    icon: LogOut,
-    path: "/logout",
-  },
+
 ];

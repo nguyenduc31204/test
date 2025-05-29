@@ -14,8 +14,8 @@ import {
     LuRefreshCcw
 
 } from "react-icons/lu"
-import Header from '../../components/layouts/Header';
-import DasboardLayout from '../../components/layouts/DashboardLayout';
+import Header from '../../../components/layouts/Header';
+import DasboardLayout from '../../../components/layouts/DashboardLayout';
 
 const Home = () => {
   const navigate = useNavigate();

@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import { UserContext } from '../../context/userContext'
 import { Link, useNavigate } from 'react-router-dom'
-import { validateEmail } from '../../utils/help'
+import { decodeToken, validateEmail } from '../../utils/help'
 import { API_PATHS, BASE_URL } from '../../utils/apiPath'
 import axiosInstance from '../../utils/axiosIntance'
 import Input from '../../components/input/Input'
@@ -47,6 +47,8 @@ const Login = () => {
 
             const {access_token} = respone.data
 
+            // const decode = decodeToken(access_token)
+            // console.log(decode)
             if(access_token) {
                 localStorage.setItem("access_token", access_token);
                 navigate("/dashboard");

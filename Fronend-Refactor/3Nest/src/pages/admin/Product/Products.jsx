@@ -12,13 +12,12 @@ import {
     LuRefreshCcw
 } from "react-icons/lu"
 
-import Header from '../components/layouts/Header'
-import DasboardLayout from '../components/layouts/DashboardLayout'
-import { API_PATHS, BASE_URL } from '../utils/apiPath'
+import Header from '../../../components/layouts/Header'
+import DasboardLayout from '../../../components/layouts/DashboardLayout'
+import { API_PATHS, BASE_URL } from '../../../utils/apiPath'
 import { useNavigate } from 'react-router-dom'
-import AddOrder from './AddOder'
 
-const Orders = () => {
+const Products = () => {
     const navigate = useNavigate();
     const [types, setTypes] = useState([]);
     const [selectedTypeId, setSelectedTypeId] = useState('');
@@ -27,12 +26,6 @@ const Orders = () => {
     const [error, setError] = useState(null);
     const role = localStorage.getItem('role');
     const [activeRole, setActiveRole] = useState(role || 'admin');
-    const [isAddOrderOpen, setIsAddOrderOpen] = useState(false);
-    const openAddOrder = () => {
-        
-    }
-    const closeAddOrder = () => setIsAddOrderOpen(false);
-
 
     useEffect(() => {
         const fetchTypes = async () => {
@@ -44,24 +37,24 @@ const Orders = () => {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
+                        'User-Agent': 'Mozilla/5.0'
                     },
                 });
 
                 const contentType = response.headers.get('content-type');
+                const responseBody = await response.text();
+
+                console.log("Raw API Response:", responseBody); 
+
                 if (contentType && contentType.includes('text/html')) {
-                    const html = await response.text();
                     throw new Error(`Server returned HTML instead of JSON. Status: ${response.status}`);
                 }
 
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(
-                        errorData.message || 
-                        `HTTP error! status: ${response.status}`
-                    );
-                }
+                const result = JSON.parse(responseBody);
 
-                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.message || `HTTP error! status: ${response.status}`);
+                }
 
                 if (!result || typeof result !== 'object') {
                     throw new Error('Invalid API response structure');
@@ -82,7 +75,8 @@ const Orders = () => {
             } catch (err) {
                 console.error("API Error:", err);
                 setError(err.message);
-                
+
+                // Redirect to login if the error is related to authentication
                 if (err.message.includes('401')) {
                     navigate('/login');
                 }
@@ -94,9 +88,10 @@ const Orders = () => {
         fetchTypes();
     }, [BASE_URL, navigate]);
 
+
     useEffect(() => {
         if (selectedTypeId && activeRole) {
-            loadProductsByTypeAndRole("admin", 1);
+            loadProductsByTypeAndRole(activeRole, selectedTypeId);
         }
     }, [selectedTypeId, activeRole]);
 
@@ -108,6 +103,7 @@ const Orders = () => {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
                 }
             });
 
@@ -126,9 +122,6 @@ const Orders = () => {
         }
     };
 
-    const handleOrder = () => {
-
-    }
 
     const handleTypeChange = (e) => {
         setSelectedTypeId(e.target.value);
@@ -140,7 +133,7 @@ const Orders = () => {
 
     const handleRefresh = () => {
         if (selectedTypeId && activeRole) {
-            loadProductsByTypeAndRole(activeRole, 1);
+            loadProductsByTypeAndRole(activeRole, selectedTypeId);
         }
     };
 
@@ -149,7 +142,7 @@ const Orders = () => {
     return (
         <div>
             <Header />
-            <DasboardLayout activeMenu="Orders">
+            <DasboardLayout activeMenu="Products">
                 <div className='my-5 mx-auto'>
                     <div className="content p-20">
                         <div className="page-header flex justify-between items-center mb-10">
@@ -160,8 +153,8 @@ const Orders = () => {
                                 </div>
                             </div>
                             <div className="action-buttons mb-2">
-                                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors" onClick={openAddOrder}>
-                                    <i className="fas fa-plus mr-2"></i> Add new order
+                                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors">
+                                    <i className="fas fa-plus mr-2"></i> Add new product
                                 </button>
                             </div>
                         </div>
@@ -172,7 +165,7 @@ const Orders = () => {
                                     <LuCoins className="w-6 h-6" />
                                 </div>
                                 <div className="stat-value text-2xl font-bold text-gray-800">{products.length}</div>
-                                <div className="stat-label text-gray-500">Total Orders</div>
+                                <div className="stat-label text-gray-500">Total Products</div>
                             </div>
 
                             <div className="stat-card flex-1 min-w-[200px] rounded-md p-5 m-2 shadow-md bg-white">
@@ -182,7 +175,7 @@ const Orders = () => {
                                 <div className="stat-value text-2xl font-bold text-gray-800">
                                     {products.filter(p => p.status === true).length}
                                 </div>
-                                <div className="stat-label text-gray-500">Active Orders</div>
+                                <div className="stat-label text-gray-500">Active Products</div>
                             </div>
 
                             <div className="stat-card flex-1 min-w-[200px] rounded-md p-5 m-2 shadow-md bg-white">
@@ -192,13 +185,13 @@ const Orders = () => {
                                 <div className="stat-value text-2xl font-bold text-gray-800">
                                     {products.filter(p => p.status === false).length}
                                 </div>
-                                <div className="stat-label text-gray-500">Inactive Orders</div>
+                                <div className="stat-label text-gray-500">Inactive Products</div>
                             </div>
                         </div>
 
                         <div className="card bg-white rounded-lg shadow-md overflow-hidden mb-6">
                             <div className="card-header flex items-center justify-between p-4 border-b border-gray-200">
-                                <h2 className="text-lg font-semibold text-gray-800">Orders</h2>
+                                <h2 className="text-lg font-semibold text-gray-800">Products And Services</h2>
                                 <div className="tools flex space-x-2">
                                     <button 
                                         className="p-2 text-gray-600 hover:text-green-600 hover:bg-gray-100 rounded-md transition-colors"
@@ -222,8 +215,58 @@ const Orders = () => {
                                 </div>
                             </div>
 
+                            {/* Type Selector */}
+                            <div className="p-4 border-b border-gray-200">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
+                                <select 
+                                    value={selectedTypeId} 
+                                    onChange={handleTypeChange}
+                                    className="border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                >
+                                    {types.map(type => (
+                                        <option key={type.type_id} value={type.type_id}>
+                                            {type.type_name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Role Selector */}
+                            <div className="product-role flex space-x-2 p-4 bg-gray-50">
+                                <button
+                                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                                        activeRole === 'admin' 
+                                            ? 'bg-white shadow text-blue-600' 
+                                            : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                                    }`}
+                                    onClick={() => handleRoleChange('admin')}
+                                >
+                                    Admin
+                                </button>
+                                <button
+                                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                                        activeRole === 'sales' 
+                                            ? 'bg-white shadow text-blue-600' 
+                                            : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                                    }`}
+                                    onClick={() => handleRoleChange('sales')}
+                                >
+                                    Sales
+                                </button>
+                                <button
+                                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                                        activeRole === 'channels' 
+                                            ? 'bg-white shadow text-blue-600' 
+                                            : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                                    }`}
+                                    onClick={() => handleRoleChange('channels')}
+                                >
+                                    Channels
+                                </button>
+                            </div>
 
                             <div className="card-body p-0">
+                                {/* Error State */}
                                 {error && (
                                     <div className="p-4 bg-red-50 border-l-4 border-red-400">
                                         <div className="flex">
@@ -252,11 +295,14 @@ const Orders = () => {
                                     <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50">
                                             <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order Title</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Name</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company Name</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Name</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Budget</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Name</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category Name</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type Name</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU/Part Number</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Discount</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Discount Price</th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                             </tr>
                                         </thead>
@@ -264,7 +310,7 @@ const Orders = () => {
                                             {!loading && products.length === 0 ? (
                                                 <tr>
                                                     <td colSpan="9" className="px-6 py-8 text-center text-gray-500">
-                                                        No orders found for the selected criteria
+                                                        No products found for the selected criteria
                                                     </td>
                                                 </tr>
                                             ) : (
@@ -304,7 +350,6 @@ const Orders = () => {
                                     </table>
                                 </div>
 
-                                {/* Pagination */}
                                 <div className="pagination flex items-center justify-between px-4 py-3 border-t border-gray-200">
                                     <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                                         <div>
@@ -349,4 +394,4 @@ const Orders = () => {
     )
 }
 
-export default Orders
+export default Products

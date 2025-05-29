@@ -12,9 +12,9 @@ import {
     LuRefreshCcw
 } from "react-icons/lu"
 
-import Header from '../components/layouts/Header'
-import DasboardLayout from '../components/layouts/DashboardLayout'
-import { API_PATHS, BASE_URL } from '../utils/apiPath'
+import Header from '../../../components/layouts/Header'
+import DasboardLayout from '../../../components/layouts/DashboardLayout'
+import { API_PATHS, BASE_URL } from '../../../utils/apiPath'
 import { useNavigate } from 'react-router-dom'
 
 const Categories = () => {
@@ -26,111 +26,33 @@ const Categories = () => {
     const [error, setError] = useState(null);
     const role = localStorage.getItem('role');
     const [activeRole, setActiveRole] = useState(role || 'admin');
-    // useEffect(() => {
-    //     const fetchTypes = async () => {
-    //         setLoading(true);
-    //         setError(null);
-    //         try {
-    //             const url = `${BASE_URL}/types/get-types`;
-    //             const response = await fetch(url, {
-    //                 method: 'GET',
-    //                 headers: {
-    //                     'Accept': 'application/json',
-    //                 },
-    //             });
-
-    //             const contentType = response.headers.get('content-type');
-    //             if (contentType && contentType.includes('text/html')) {
-    //                 const html = await response.text();
-    //                 throw new Error(`Server returned HTML instead of JSON. Status: ${response.status}`);
-    //             }
-
-    //             if (!response.ok) {
-    //                 const errorData = await response.json().catch(() => ({}));
-    //                 throw new Error(
-    //                     errorData.message || 
-    //                     `HTTP error! status: ${response.status}`
-    //                 );
-    //             }
-
-    //             const result = await response.json();
-
-    //             if (!result || typeof result !== 'object') {
-    //                 throw new Error('Invalid API response structure');
-    //             }
-
-    //             if (result.status_code === 200) {
-    //                 if (Array.isArray(result.data)) {
-    //                     setTypes(result.data);
-    //                     if (result.data.length > 0) {
-    //                         setSelectedTypeId(result.data[0].type_id);
-    //                     }
-    //                 } else {
-    //                     throw new Error('Data field is not an array');
-    //                 }
-    //             } else {
-    //                 throw new Error(result.message || "API request failed");
-    //             }
-    //         } catch (err) {
-    //             console.error("API Error:", err);
-    //             setError(err.message);
-                
-    //             if (err.message.includes('401')) {
-    //                 navigate('/login');
-    //             }
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     };
-
-    //     fetchTypes();
-    // }, [BASE_URL, navigate]);
 
     useEffect(() => {
-        if (selectedTypeId && activeRole) {
-            loadProductsByTypeAndRole("admin", 1);
-        }
-    }, [selectedTypeId, activeRole]);
+        loadProductsByTypeAndRole();
+    }, []);
 
-    const loadProductsByTypeAndRole = async (role, typeId) => {
+    const loadProductsByTypeAndRole = async () => {
         try {
-            const url = `${BASE_URL}/products/get-products?role=${role}&type_id=${typeId}`;
-            console.log("Fetching products from:", url);
-            const response = await fetch(url, {
+            setLoading(true); 
+            const response = await fetch(`${BASE_URL}/categories/get-categories`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                }
+                },
+                mode: 'cors'
             });
-
-
             const result = await response.json();
-            console.log('Products API response:', result);
-
-            if (result.status_code === 200 && Array.isArray(result.data)) {
-                setProducts(result.data);
-            } else {
-                throw new Error(result.mess || "Invalid product data format");
-            }
+            setProducts(result.data);
+            setLoading(false); 
         } catch (err) {
             console.error("API Error:", err);
             setError(`Failed to load products: ${err.message}`);
+            setLoading(false); 
         }
-    };
-
-
-    const handleTypeChange = (e) => {
-        setSelectedTypeId(e.target.value);
-    };
-
-    const handleRoleChange = (newRole) => {
-        setActiveRole(newRole);
     };
 
     const handleRefresh = () => {
-        if (selectedTypeId && activeRole) {
-            loadProductsByTypeAndRole(activeRole, 1);
-        }
+        loadProductsByTypeAndRole();
     };
 
 
@@ -184,16 +106,15 @@ const Categories = () => {
 
 
                             <div className="card-body p-0">
-                                {/* Error State */}
-                                {error && (
-                                    <div className="p-4 bg-red-50 border-l-4 border-red-400">
-                                        <div className="flex">
-                                            <div className="ml-3">
-                                                <p className="text-sm text-red-700">{error}</p>
-                                            </div>
+                            {error && (
+                                <div className="p-4 bg-red-50 border-l-4 border-red-400">
+                                    <div className="flex">
+                                        <div className="ml-3">
+                                            <p className="text-sm text-red-700">{error}</p>
                                         </div>
                                     </div>
-                                )}
+                                </div>
+                            )}
 
                                 {loading && (
                                     <div className="p-8 text-center">
@@ -217,45 +138,13 @@ const Categories = () => {
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white divide-y divide-gray-200">
-                                            {!loading && products.length === 0 ? (
-                                                <tr>
-                                                    <td colSpan="9" className="px-6 py-8 text-center text-gray-500">
-                                                        No products found for the selected criteria
-                                                    </td>
+                                            {products.map((category, index) => (
+                                                <tr key={index} className="hover:bg-gray-50">
+                                                    <td className="px-6 py-4 text-sm text-gray-900">{category.category_name || '-'}</td>
+                                                    <td className="px-6 py-4 text-sm text-gray-900">{category.type_name || '-'}</td>
+                                                    <td className="px-6 py-4 text-sm text-gray-900">{category.description || '-'}</td>
                                                 </tr>
-                                            ) : (
-                                                products.map((product, index) => (
-                                                    <tr key={product.product_id || index} className="hover:bg-gray-50">
-                                                        <td className="px-6 py-4 text-sm text-gray-900">{product.product_name || '-'}</td>
-                                                        <td className="px-6 py-4 text-sm text-gray-900">{product.category_name || '-'}</td>
-                                                        <td className="px-6 py-4 text-sm text-gray-900">
-                                                            {types.find(t => t.type_id === selectedTypeId)?.type_name || '-'}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-sm text-gray-900">{product.sku_partnumber || '-'}</td>
-                                                        <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate" title={product.description}>
-                                                            {product.description || '-'}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-sm text-gray-900">
-                                                            {product.price ? `${parseFloat(product.price).toLocaleString()}` : '-'}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-sm text-gray-900">
-                                                            {product.maximum_discount ? `${product.maximum_discount}%` : '-'}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-sm text-gray-900">
-                                                            {product.maximum_discount_price ? `${parseFloat(product.maximum_discount_price).toLocaleString()}` : '-'}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-sm">
-                                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                                product.status === true 
-                                                                    ? 'bg-green-100 text-green-800' 
-                                                                    : 'bg-red-100 text-red-800'
-                                                            }`}>
-                                                                {product.status === true ? 'Active' : 'Inactive'}
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            )}
+                                            ))}
                                         </tbody>
                                     </table>
                                 </div>
