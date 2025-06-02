@@ -9,6 +9,9 @@ import Logout from './pages/admin/Logout'
 import Users from './pages/admin/User/Users'
 import AddOrder from './pages/admin/Order/AddOder'
 import Home from './pages/admin/Dashboard/Home'
+import SalesProducts from './pages/Sales/Products/SalesProducts'
+import SalesOrders from './pages/Sales/Order/SalesOrder'
+import SalesAddOrder from './pages/Sales/Order/AddOder'
 
 const Root = () => {
   const isAuthenticated = !!localStorage.getItem('access_token')
@@ -26,16 +29,20 @@ const App = () => {
     <div>
       <Routes>
         <Route path="/" element={<Root/>} />
-        <Route path='/dashboard' element={<Home/>} />
+        <Route path='/admin/dashboard' element={<Home/>} />
         <Route path="/login" element={<Login/>} />
-        <Route path="/products" element={<Products/>} />
+        <Route path="/admin/products" element={<Products/>} />
+        <Route path="/sales/products" element={<SalesProducts/>} />
         <Route path="/categories" element={<Categories/>} />
-        <Route path="/orders" element={<Orders/>} />
+        <Route path="/admin/orders" element={<Orders/>} />
+        <Route path="/sales/orders" element={<SalesOrders/>} />
         <Route path="/users" element={<Users/>} />
         <Route path="/reports" element={<Reports/>} />
         <Route path="/settings" element={<Settings/>} />
         <Route path="/logout" element={<Logout/>} />
         <Route path="/addorder" element={<AddOrder/>} />
+        <Route path="/sales/addorder" element={<SalesAddOrder />} />
+        <Route path="/sales/editorder/:order_id" element={<SalesAddOrder />} />
       </Routes>
     </div>
   )

@@ -16,16 +16,19 @@ import Header from '../../../components/layouts/Header'
 import DasboardLayout from '../../../components/layouts/DashboardLayout'
 import { API_PATHS, BASE_URL } from '../../../utils/apiPath'
 import { useNavigate } from 'react-router-dom'
+import { decodeToken } from '../../../utils/help'
 
 const Products = () => {
     const navigate = useNavigate();
     const [types, setTypes] = useState([]);
-    const [selectedTypeId, setSelectedTypeId] = useState('');
+    const [selectedTypeId, setSelectedTypeId] = useState(1);
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const role = localStorage.getItem('role');
-    const [activeRole, setActiveRole] = useState(role || 'admin');
+    const token = localStorage.getItem("access_token");
+    const decode = decodeToken(token);
+    const role = decode?.role || localStorage.getItem('role');
+    const [activeRole, setActiveRole] = useState(role === 'admin' ? 'admin' : role);
 
     useEffect(() => {
         const fetchTypes = async () => {
@@ -37,7 +40,7 @@ const Products = () => {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
-                        'User-Agent': 'Mozilla/5.0'
+                        'ngrok-skip-browser-warning': 'true'
                     },
                 });
 
@@ -76,7 +79,6 @@ const Products = () => {
                 console.error("API Error:", err);
                 setError(err.message);
 
-                // Redirect to login if the error is related to authentication
                 if (err.message.includes('401')) {
                     navigate('/login');
                 }
@@ -88,7 +90,6 @@ const Products = () => {
         fetchTypes();
     }, [BASE_URL, navigate]);
 
-
     useEffect(() => {
         if (selectedTypeId && activeRole) {
             loadProductsByTypeAndRole(activeRole, selectedTypeId);
@@ -97,16 +98,16 @@ const Products = () => {
 
     const loadProductsByTypeAndRole = async (role, typeId) => {
         try {
-            const url = `${BASE_URL}/products/get-products?role=${role}&type_id=${typeId}`;
+            const url = `${BASE_URL}/products/get-products-by-role-and-type?role=${role}&type_id=${typeId}`;
             console.log("Fetching products from:", url);
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                    'ngrok-skip-browser-warning': 'true'
                 }
             });
-
 
             const result = await response.json();
             console.log('Products API response:', result);
@@ -122,13 +123,14 @@ const Products = () => {
         }
     };
 
-
     const handleTypeChange = (e) => {
         setSelectedTypeId(e.target.value);
     };
 
     const handleRoleChange = (newRole) => {
-        setActiveRole(newRole);
+        if (role === 'admin') {
+            setActiveRole(newRole);
+        }
     };
 
     const handleRefresh = () => {
@@ -137,12 +139,10 @@ const Products = () => {
         }
     };
 
-  
-
     return (
         <div>
             <Header />
-            <DasboardLayout activeMenu="Products">
+            <DasboardLayout activeMenu="02">
                 <div className='my-5 mx-auto'>
                     <div className="content p-20">
                         <div className="page-header flex justify-between items-center mb-10">
@@ -152,11 +152,14 @@ const Products = () => {
                                     <a href="#" className='text-gray-500'>Dashboard</a> / Product
                                 </div>
                             </div>
-                            <div className="action-buttons mb-2">
-                                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors">
-                                    <i className="fas fa-plus mr-2"></i> Add new product
-                                </button>
-                            </div>
+                            {/* Chỉ hiển thị nút Add new product cho admin */}
+                            {role === 'admin' && (
+                                <div className="action-buttons mb-2">
+                                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors">
+                                        <i className="fas fa-plus mr-2"></i> Add new product
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         <div className="stats-row flex flex-wrap gap-4 mb-10">
@@ -215,7 +218,6 @@ const Products = () => {
                                 </div>
                             </div>
 
-                            {/* Type Selector */}
                             <div className="p-4 border-b border-gray-200">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
                                 <select 
@@ -230,43 +232,44 @@ const Products = () => {
                                     ))}
                                 </select>
                             </div>
-
-                            {/* Role Selector */}
-                            <div className="product-role flex space-x-2 p-4 bg-gray-50">
-                                <button
-                                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                                        activeRole === 'admin' 
-                                            ? 'bg-white shadow text-blue-600' 
-                                            : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                                    }`}
-                                    onClick={() => handleRoleChange('admin')}
-                                >
-                                    Admin
-                                </button>
-                                <button
-                                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                                        activeRole === 'sales' 
-                                            ? 'bg-white shadow text-blue-600' 
-                                            : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                                    }`}
-                                    onClick={() => handleRoleChange('sales')}
-                                >
-                                    Sales
-                                </button>
-                                <button
-                                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                                        activeRole === 'channels' 
-                                            ? 'bg-white shadow text-blue-600' 
-                                            : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                                    }`}
-                                    onClick={() => handleRoleChange('channels')}
-                                >
-                                    Channels
-                                </button>
-                            </div>
+                            
+                            {/* Role Selector - Chỉ hiển thị cho admin */}
+                            {role === 'admin' && (
+                                <div className="product-role flex space-x-2 p-4 bg-gray-50">
+                                    <button
+                                        className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                                            activeRole === 'admin' 
+                                                ? 'bg-white shadow text-blue-600' 
+                                                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                                        }`}
+                                        onClick={() => handleRoleChange('admin')}
+                                    >
+                                        Admin
+                                    </button>
+                                    <button
+                                        className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                                            activeRole === 'sales' 
+                                                ? 'bg-white shadow text-blue-600' 
+                                                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                                        }`}
+                                        onClick={() => handleRoleChange('sales')}
+                                    >
+                                        Sales
+                                    </button>
+                                    <button
+                                        className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                                            activeRole === 'channels' 
+                                                ? 'bg-white shadow text-blue-600' 
+                                                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                                        }`}
+                                        onClick={() => handleRoleChange('channels')}
+                                    >
+                                        Channels
+                                    </button>
+                                </div>
+                            )}
 
                             <div className="card-body p-0">
-                                {/* Error State */}
                                 {error && (
                                     <div className="p-4 bg-red-50 border-l-4 border-red-400">
                                         <div className="flex">
@@ -277,7 +280,6 @@ const Products = () => {
                                     </div>
                                 )}
 
-                                {/* Loading State */}
                                 {loading && (
                                     <div className="p-8 text-center">
                                         <div className="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-blue-500 bg-white">
@@ -290,7 +292,6 @@ const Products = () => {
                                     </div>
                                 )}
 
-                                {/* Table */}
                                 <div className="table-responsive overflow-x-auto">
                                     <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50">

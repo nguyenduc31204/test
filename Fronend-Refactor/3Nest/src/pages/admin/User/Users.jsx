@@ -41,7 +41,8 @@ const Users = () => {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                    'ngrok-skip-browser-warning': 'true',
                 },
                 mode: 'cors'
             });
@@ -69,7 +70,9 @@ const Users = () => {
                 const response = await fetch(`${BASE_URL}/users/delete-user/?user_id=${userId}`, {
                     method: 'DELETE',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                        'ngrok-skip-browser-warning': 'true',
+
                     }
                 });
                 if (response.ok) {
@@ -85,7 +88,7 @@ const Users = () => {
  return (
         <div>
             <Header />
-            <DasboardLayout activeMenu="Users">
+            <DasboardLayout activeMenu="05">
                 <div className='my-5 mx-auto'>
                     <div className="content p-20">
                         <div className="page-header flex justify-between items-center mb-10">

@@ -38,8 +38,10 @@ const Categories = () => {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
+                    'User-Agent': 'custom-agent/1.0',
+                    'ngrok-skip-browser-warning': 'true'
                 },
-                mode: 'cors'
+                // mode: 'cors'
             });
             const result = await response.json();
             setProducts(result.data);
@@ -59,7 +61,7 @@ const Categories = () => {
  return (
         <div>
             <Header />
-            <DasboardLayout activeMenu="Categories">
+            <DasboardLayout activeMenu="03">
                 <div className='my-5 mx-auto'>
                     <div className="content p-20">
                         <div className="page-header flex justify-between items-center mb-10">
